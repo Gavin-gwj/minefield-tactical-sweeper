@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#080b0d" />
+    <meta name="description" content="MINE//FIELD 是一台现代战术扫雷终端，支持经典难度、每日挑战、键盘操作与本地最佳成绩。" />
+    <title>MINE//FIELD · 现代战术扫雷</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient--one" aria-hidden="true"></div>
+    <div class="ambient ambient--two" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="MINE FIELD 首页">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="brand-copy">
+            <strong>MINE//FIELD</strong>
+            <small>TACTICAL SWEEPER v2.6</small>
+          </span>
+        </a>
+        <div class="topbar-actions">
+          <div class="live-pill" id="saveStatus"><span></span> LOCAL SAVE ONLINE</div>
+          <button class="icon-button" id="soundToggle" type="button" aria-label="关闭音效" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9v6h4l5 4V5L9 9H5Z"/><path class="sound-wave" d="M17 9.2a4 4 0 0 1 0 5.6M19.5 6.7a7.5 7.5 0 0 1 0 10.6"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero" aria-labelledby="pageTitle">
+          <div class="hero-copy">
+            <p class="kicker">CLEAR THE GRID. KEEP YOUR NERVE.</p>
+            <h1 id="pageTitle">每一格，<br /><span>都是判断。</span></h1>
+            <p class="hero-note">首击安全、零区连开、右键标雷、双击和弦。把逻辑推理包装成一台会呼吸的战术终端。</p>
+          </div>
+          <div class="hero-signal" aria-hidden="true">
+            <div class="signal-orbit"><span></span><span></span><span></span></div>
+            <div class="signal-readout">
+              <small>FIELD STATUS</small>
+              <strong id="fieldStatus">STANDBY</strong>
+              <span id="fieldHint">选择难度，开始扫描</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="game-layout" aria-label="扫雷游戏控制台">
+          <aside class="control-panel panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-label">MISSION PROFILE</p>
+                <h2>作战配置</h2>
+              </div>
+              <span class="panel-index">01</span>
+            </div>
+
+            <div class="difficulty-list" role="tablist" aria-label="难度选择">
+              <button class="difficulty-item is-active" type="button" role="tab" aria-selected="true" data-level="easy">
+                <span><b>新兵</b><small>9 × 9</small></span><em>10 雷</em>
+              </button>
+              <button class="difficulty-item" type="button" role="tab" aria-selected="false" data-level="medium">
+                <span><b>战术</b><small>16 × 16</small></span><em>40 雷</em>
+              </button>
+              <button class="difficulty-item" type="button" role="tab" aria-selected="false" data-level="expert">
+                <span><b>专家</b><small>30 × 16</small></span><em>99 雷</em>
+              </button>
+              <button class="difficulty-item difficulty-item--daily" type="button" role="tab" aria-selected="false" data-level="daily">
+                <span><b>每日信号</b><small id="dailyBoardSize">20 × 14</small></span><em>55 雷</em>
+              </button>
+            </div>
+
+            <div class="mission-actions">
+              <button class="primary-button" id="newGameButton" type="button">
+                <span>重置战场</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12a7 7 0 1 0 2.1-5"/><path d="M5 4v3h3"/></svg>
+              </button>
+              <button class="secondary-button" id="dailyButton" type="button">进入今日挑战</button>
+            </div>
+
+            <div class="legend">
+              <p class="panel-label">OPERATOR NOTES</p>
+              <div><kbd>左键</kbd><span>翻开安全格</span></div>
+              <div><kbd>右键</kbd><span>标记 / 取消地雷</span></div>
+              <div><kbd>双击</kbd><span>数字周围和弦展开</span></div>
+              <div><kbd>方向键</kbd><span>移动准星，F 标雷</span></div>
+            </div>
+          </aside>
+
+          <section class="board-zone panel">
+            <div class="board-header">
+              <div>
+                <p class="panel-label">ACTIVE GRID</p>
+                <h2 id="levelTitle">新兵训练区</h2>
+              </div>
+              <div class="board-status" id="boardStatus" aria-live="polite">
+                <span class="status-dot"></span>
+                <span id="statusText">等待首次点击</span>
+              </div>
+            </div>
+
+            <div class="stats-row" aria-label="游戏数据">
+              <div class="stat">
+                <span class="stat-icon stat-icon--mine" aria-hidden="true">◆</span>
+                <div><small>剩余标记</small><strong id="mineCounter">010</strong></div>
+              </div>
+              <div class="stat">
+                <span class="stat-icon stat-icon--time" aria-hidden="true">◷</span>
+                <div><small>扫描时间</small><strong id="timer">000</strong></div>
+              </div>
+              <div class="stat stat--progress">
+                <span class="stat-icon stat-icon--scan" aria-hidden="true">⌁</span>
+                <div><small>区域清除</small><strong id="progressText">0%</strong></div>
+              </div>
+            </div>
+
+            <div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div>
+
+            <div class="board-stage">
+              <div class="board-scanline" aria-hidden="true"></div>
+              <div class="board-scroll">
+                <div class="mine-board" id="mineBoard" role="grid" aria-label="扫雷棋盘"></div>
+              </div>
+              <div class="result-card" id="resultCard" aria-live="assertive">
+                <span class="result-eyebrow" id="resultEyebrow">FIELD SECURED</span>
+                <h3 id="resultTitle">任务完成</h3>
+                <p id="resultText">所有危险区域已清除。</p>
+                <div class="result-actions">
+                  <button class="primary-button" id="replayButton" type="button">再来一局</button>
+                  <button class="secondary-button" id="closeResultButton" type="button">查看棋盘</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="board-footer">
+              <p><span class="footer-key">FIRST CLICK</span> 必定安全，并优先扩展零雷区域</p>
+              <button class="text-button" id="hintButton" type="button">提示一格 <span id="hintCount">3</span>/3</button>
+            </div>
+          </section>
+
+          <aside class="intel-panel panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-label">FIELD INTEL</p>
+                <h2>战报</h2>
+              </div>
+              <span class="panel-index">02</span>
+            </div>
+
+            <div class="intel-score">
+              <span>本局风险指数</span>
+              <strong id="riskScore">LOW</strong>
+              <div class="risk-meter"><i id="riskMeter"></i></div>
+            </div>
+
+            <dl class="intel-list">
+              <div><dt>已完成</dt><dd id="gamesWon">0</dd></div>
+              <div><dt>最佳时间</dt><dd id="bestTime">--:--</dd></div>
+              <div><dt>连续胜利</dt><dd id="winStreak">0</dd></div>
+            </dl>
+
+            <div class="tip-card">
+              <span class="tip-icon">↯</span>
+              <div>
+                <strong>战术提示</strong>
+                <p id="tipText">数字代表相邻八格里的地雷数量。先从零区撕开缺口。</p>
+              </div>
+            </div>
+
+            <div class="sound-note">
+              <span></span>
+              <p>声音由浏览器实时合成，无外部音频文件。</p>
+            </div>
+          </aside>
+        </section>
+      </main>
+
+      <footer>
+        <span>MINE//FIELD</span>
+        <p>离线可玩 · 本地记录 · 为专注与推理设计</p>
+        <a href="#pageTitle">返回顶部 ↑</a>
+      </footer>
+    </div>
+
+    <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+    <script src="./app.js"></script>
+  </body>
+</html>
