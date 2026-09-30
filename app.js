@@ -87,7 +87,11 @@
   }
 
   function saveStats() {
-    localStorage.setItem(statsKey, JSON.stringify(stats));
+    try {
+      localStorage.setItem(statsKey, JSON.stringify(stats));
+    } catch {
+      return;
+    }
     saveStatus.classList.add("is-saving");
     window.setTimeout(() => saveStatus.classList.remove("is-saving"), 360);
   }
@@ -743,9 +747,18 @@
     }
   }
 
+  function selectDifficulty(level) {
+    document.querySelectorAll(".difficulty-item").forEach((button) => {
+      const isActive = button.dataset.level === level;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-selected", String(isActive));
+    });
+  }
+
   function bindEvents() {
     document.querySelectorAll(".difficulty-item").forEach((button) => {
       button.addEventListener("click", () => {
+        selectDifficulty(button.dataset.level);
         resetBoard(button.dataset.level);
         if (button.dataset.level === "daily") {
           dom.dailyButton.textContent = `今日挑战 · ${todayKey}`;
@@ -756,7 +769,10 @@
     $("#newGameButton").addEventListener("click", () => resetBoard(state.level));
     $("#replayButton").addEventListener("click", () => resetBoard(state.level));
     $("#closeResultButton").addEventListener("click", () => resultCard.classList.remove("is-visible"));
-    dom.dailyButton.addEventListener("click", () => resetBoard("daily"));
+    dom.dailyButton.addEventListener("click", () => {
+      selectDifficulty("daily");
+      resetBoard("daily");
+    });
     dom.hintButton.addEventListener("click", hint);
 
     boardEl.addEventListener("click", handleBoardClick);
